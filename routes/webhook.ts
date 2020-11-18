@@ -1,7 +1,7 @@
 import express from 'express'
-import http2 from 'http2'
 import {User} from "../models/user";
 import {Installation} from "../models/installation";
+import { APNS, SilentNotification } from "apns2";
 
 export const router = express.Router();
 
@@ -11,25 +11,12 @@ const validEvents = [
     'pull_request'
 ]
 
-function sendAPNS(deviceToken: string) {
-    const payload = {
-        'aps': {
-            'content-available': 1
-        }
-    }
-
-    const headers = {
-        ':method': 'POST',
-        ':path': `/3/device/${deviceToken}`,
-        'authorization': process.env.APNS_AUTHORIZATION_TOKEN,
-        'apns-push-type': 'background',
-        'apns-priority': 5
-    }
-
-    const apns = http2.connect(process.env.APNS_SERVER).request(headers)
-    apns.write(payload)
-    apns.end()
-}
+const apnsClient = new APNS({
+    team: process.env.APNS_ISS,
+    keyId: process.env.APNS_KID,
+    signingKey: process.env.APNS_AUTH_KEY,
+    host: process.env.APNS_SERVER
+})
 
 router.post('/', async (req, res) => {
     console.log(`webhook data received: ${JSON.stringify(req.body)}\n\n`)
@@ -67,7 +54,8 @@ router.post('/', async (req, res) => {
         res.status(500).send(`User with github id ${githubId} not found`)
     }
 
-    sendAPNS(deviceToken)
+    const sn = new SilentNotification(deviceToken)
+    await apnsClient.send(sn)
 
     res.sendStatus(200);
 })

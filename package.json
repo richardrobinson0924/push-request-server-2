@@ -12,6 +12,7 @@
     "postinstall": "npm run build"
   },
   "dependencies": {
+    "apns2": "^9.2.0",
     "mongoose": "^5.10.15",
     "express": "~4.16.1",
     "ts-node": "^9.0.0",
