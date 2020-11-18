@@ -10,8 +10,7 @@ import {AddressInfo} from "net";
 /**
  * Get port from environment and store in Express.
  */
-const port = 4567
-app.set('port', port);
+app.set('port', process.env.PORT);
 
 /**
  * Create HTTP server.
@@ -21,7 +20,7 @@ const server = http.createServer(app);
 /**
  * Listen on provided port, on all network interfaces.
  */
-server.listen(port);
+server.listen(process.env.PORT);
 server.on('listening', onListening);
 
 /**
