@@ -3,7 +3,9 @@ import mongoose from 'mongoose'
 import { router as webhookRouter } from "./routes/webhook";
 import { router as userRouter } from "./routes/user";
 
-require('dotenv').config()
+if (process.env.NODE_ENV !== 'production') {
+    require('dotenv').config()
+}
 
 const mongooseOptions = {
     useUnifiedTopology: true,
