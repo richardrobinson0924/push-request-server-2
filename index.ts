@@ -6,6 +6,7 @@
 import { app } from './app'
 import http from 'http'
 import {AddressInfo} from "net";
+import {APNS} from "apns2";
 
 /**
  * Get port from environment and store in Express.
@@ -33,3 +34,10 @@ function onListening() {
 
     console.log(`Listening on ${bind}`)
 }
+
+export const apnsClient = new APNS({
+    team: process.env.APNS_ISS,
+    keyId: process.env.APNS_KID,
+    signingKey: process.env.APNS_AUTH_KEY,
+    host: process.env.APNS_SERVER
+})

@@ -2,6 +2,7 @@ import express from 'express'
 import {User} from "../models/user";
 import {Installation} from "../models/installation";
 import { APNS, SilentNotification } from "apns2";
+import {apnsClient} from "../index";
 
 export const router = express.Router();
 
@@ -10,13 +11,6 @@ const validEvents = [
     'issue',
     'pull_request'
 ]
-
-const apnsClient = new APNS({
-    team: process.env.APNS_ISS,
-    keyId: process.env.APNS_KID,
-    signingKey: process.env.APNS_AUTH_KEY,
-    host: process.env.APNS_SERVER
-})
 
 router.post('/', async (req, res) => {
     console.log(`webhook data received: ${JSON.stringify(req.body)}\n\n`)

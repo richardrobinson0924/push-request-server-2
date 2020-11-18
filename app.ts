@@ -18,7 +18,7 @@ export const app = express();
 
 app.use(express.json());
 
-app.use('/', (req, res) => res.sendStatus(200))
+app.get('/', (req, res) => res.sendStatus(201))
 
 app.use('/receive-webhook', webhookRouter);
 app.use('/users', userRouter)
