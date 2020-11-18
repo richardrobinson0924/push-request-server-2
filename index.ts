@@ -39,5 +39,6 @@ export const apnsClient = new APNS({
     team: process.env.APNS_ISS,
     keyId: process.env.APNS_KID,
     signingKey: process.env.APNS_AUTH_KEY,
-    host: process.env.APNS_SERVER
+    host: process.env.APNS_SERVER,
+    defaultTopic: process.env.APNS_TOPIC
 })
