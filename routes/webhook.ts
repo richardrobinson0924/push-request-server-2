@@ -54,7 +54,13 @@ router.post('/', async (req, res) => {
     }
 
     const sn = new SilentNotification(deviceToken)
-    await apnsClient.send(sn)
 
-    res.sendStatus(200);
+    try {
+        await apnsClient.send(sn)
+        res.sendStatus(200);
+    } catch (e) {
+        const message = `Error sending notification: ${JSON.stringify(e)}`
+        console.log(message)
+        res.status(500).send(message)
+    }
 })
