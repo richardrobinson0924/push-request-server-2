@@ -1,16 +1,5 @@
 import axios from 'axios'
-import { Event } from "../models/event";
-
-export enum EventType {
-    issueOpened,
-    issueClosed,
-    issueAssigned,
-    prOpened,
-    prClosed,
-    prMerged,
-    prReviewRequested,
-    prReviewed
-}
+import { Event, EventType } from "../models/event";
 
 function parseIssue(
     action: string,

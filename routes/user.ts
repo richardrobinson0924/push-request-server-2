@@ -5,6 +5,13 @@ export const router = express.Router();
 
 router.post('/', async (req, res) => {
     try {
+        const existingUser = await User.findOne({ accessToken: req.body['accessToken'] })
+        if (existingUser) {
+            console.log(`User already exists`)
+            res.sendStatus(200)
+            return;
+        }
+
         const user = await User.create(req.body)
         console.log(`User created: ${JSON.stringify(user)}`)
 
