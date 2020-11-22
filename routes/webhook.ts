@@ -3,13 +3,15 @@ import {User} from "../models/user";
 import {Installation} from "../models/installation";
 import { APNS, SilentNotification } from "apns2";
 import {apnsClient} from "../index";
+import {parsePayload} from "../controllers/payload_parser";
 
 export const router = express.Router();
 
 const validEvents = [
     'installation',
     'issue',
-    'pull_request'
+    'pull_request',
+    'pull_request_review'
 ]
 
 router.post('/', async (req, res) => {
@@ -43,19 +45,26 @@ router.post('/', async (req, res) => {
         res.status(500).send(`Installation with id ${req.body['installation']['id']} not found.`)
     }
 
-    const deviceToken = await User
-        .findOne({ githubId: githubId })
-        .map(user => user.deviceToken)
+    const user = await User.findOne({ githubId: githubId })
 
-    console.log(`device token is ${deviceToken}`)
+    console.log(`device token is ${user.deviceToken}`)
 
-    if (!deviceToken) {
+    if (!user.deviceToken) {
         res.status(500).send(`User with github id ${githubId} not found`)
     }
 
-    const sn = new SilentNotification(deviceToken)
+    const event = await parsePayload(req.body, user.accessToken);
+    if (!event) {
+        res.status(500).send(`Payload is undefined`)
+    }
+
+    user.events.push(event);
+    await user.save();
+
+    const sn = new SilentNotification(user.deviceToken)
 
     try {
+        console.log('Sending APNS notification')
         await apnsClient.send(sn)
         res.sendStatus(200);
     } catch (e) {

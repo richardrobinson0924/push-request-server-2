@@ -14,3 +14,14 @@ router.post('/', async (req, res) => {
         res.sendStatus(500);
     }
 })
+
+router.get('/:accessToken', async (req, res) => {
+    try {
+        console.log(`Finding user with token ${req.params['accessToken']}`)
+        const user = await User.findOne({ accessToken: req.params['accessToken'] })
+        res.json(user)
+    } catch (e) {
+        console.log('Failed to find user');
+        res.sendStatus(500);
+    }
+})
