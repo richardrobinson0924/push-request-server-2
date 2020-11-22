@@ -1,13 +1,14 @@
 export enum EventType {
-    issueOpened,
-    issueClosed,
-    issueAssigned,
-    prOpened,
-    prClosed,
-    prMerged,
-    prReviewRequested,
-    prReviewed
+    issueOpened = 'issueOpened',
+    issueClosed = 'issueClosed',
+    issueAssigned = 'issueAssigned',
+    prOpened = 'prOpened',
+    prClosed = 'prClosed',
+    prMerged = 'prMerged',
+    prReviewRequested = 'prReviewRequested',
+    prReviewed = 'prReviewed'
 }
+
 export interface Event {
     eventType: EventType
     repoName: string

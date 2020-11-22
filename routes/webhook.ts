@@ -58,7 +58,7 @@ router.post('/', async (req, res) => {
         res.status(500).send(`Payload is undefined`)
     }
 
-    user.events.push(event);
+    user.latestEvent = event
     await user.save();
 
     const sn = new SilentNotification(user.deviceToken)

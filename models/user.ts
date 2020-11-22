@@ -5,17 +5,14 @@ export interface IUser {
     accessToken: string
     githubId: number
     deviceToken: string
-    events: Event[]
+    latestEvent: Event
 }
 
 const UserSchema = new Schema({
     accessToken: { type: String, required: true },
     githubId: { type: Number, required: true },
     deviceToken: { type: String, required: true },
-    events: {
-        type: [Object],
-        default: [],
-    }
+    latestEvent: { type: Event }
 })
 
 export const User: Model<IUser & Document> = model('User', UserSchema);
