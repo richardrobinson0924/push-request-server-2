@@ -16,6 +16,6 @@ export interface Event {
     title: string
     description: string
     avatarUrl: string
-    timestamp: Date
+    timestamp: string
     url: string
 }

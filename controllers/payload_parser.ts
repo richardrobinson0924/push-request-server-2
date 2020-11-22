@@ -39,7 +39,7 @@ function parseIssue(
     const url = issue['html_url'];
     const number = issue['number'];
     const title = issue['title'];
-    const timestamp = new Date(issue['updated_at'])
+    const timestamp = issue['updated_at']
 
     return {
         eventType: eventType,
@@ -73,7 +73,7 @@ function parsePullRequestReview(
     const url = pr['html_url'];
     const title = pr['title'];
     const number = pr['number'];
-    const timestamp = new Date(pr['updated_at'])
+    const timestamp = pr['updated_at']
 
     let description;
 
@@ -124,7 +124,7 @@ async function parsePullRequest(
     const url = pr['html_url'];
     const title = pr['title'];
     const number = pr['number'];
-    const timestamp = new Date(pr['updated_at'])
+    const timestamp = pr['updated_at']
 
     let eventType;
     let description;
