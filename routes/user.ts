@@ -57,7 +57,7 @@ router.post('/new', async (req, res) => {
  * Fetches the latest `Event` for the authenticated `User`
  *
  * Headers:
- * 'Authorization' : <Access Token>
+ * 'Authorization' : <GitHub ID>
  *
  * Response:
  * A JSON object of the form
@@ -76,11 +76,11 @@ router.post('/new', async (req, res) => {
  */
 router.get('/latest-event', async (req, res) => {
     try {
-        const token = req.headers.authorization
-        console.log(`Finding user with token ${token}`)
+        const githubId = req.headers.authorization
+        console.log(`Finding user with id ${githubId}`)
 
         const event = await User
-            .findOne({ accessToken: token })
+            .findOne({ githubId: parseInt(githubId) })
             .map(user => user.latestEvent)
 
         res.json(event)
