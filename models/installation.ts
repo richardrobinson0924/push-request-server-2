@@ -6,7 +6,7 @@ export interface IInstallation {
 }
 
 const InstallationSchema = new Schema({
-    installationId: { type: Number, required: true },
+    installationId: { type: Number, required: true, index: true },
     githubId: { type: Number, required: true },
 })
 

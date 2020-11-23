@@ -46,10 +46,7 @@ router.post('/', async (req, res) => {
     }
 
     const user = await User.findOne({ githubId: githubId })
-
-    console.log(`device token is ${user.deviceToken}`)
-
-    if (!user.deviceToken) {
+    if (!user) {
         res.status(500).send(`User with github id ${githubId} not found`)
     }
 
@@ -61,15 +58,17 @@ router.post('/', async (req, res) => {
     user.latestEvent = event
     await user.save();
 
-    const sn = new SilentNotification(user.deviceToken)
+    for (const deviceToken of user.deviceTokens) {
+        const sn = new SilentNotification(deviceToken)
 
-    try {
-        console.log('Sending APNS notification')
-        await apnsClient.send(sn)
-        res.sendStatus(200);
-    } catch (e) {
-        const message = `Error sending notification: ${JSON.stringify(e)}`
-        console.log(message)
-        res.status(500).send(message)
+        try {
+            console.log('Sending APNS notification')
+            await apnsClient.send(sn)
+            res.sendStatus(200);
+        } catch (e) {
+            const message = `Error sending notification: ${JSON.stringify(e)}`
+            console.log(message)
+            res.status(500).send(message)
+        }
     }
 })
