@@ -43,16 +43,19 @@ router.post('/', async (req, res) => {
 
     if (!githubId) {
         res.status(500).send(`Installation with id ${req.body['installation']['id']} not found.`)
+        return;
     }
 
     const user = await User.findOne({ githubId: githubId })
     if (!user) {
         res.status(500).send(`User with github id ${githubId} not found`)
+        return;
     }
 
     const event = await parsePayload(req.body);
     if (!event) {
         res.status(500).send(`Payload is undefined`)
+        return;
     }
 
     user.latestEvent = event
@@ -69,6 +72,7 @@ router.post('/', async (req, res) => {
             const message = `Error sending notification: ${JSON.stringify(e)}`
             console.log(message)
             res.status(500).send(message)
+            return;
         }
     }
 })
