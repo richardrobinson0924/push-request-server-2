@@ -12,7 +12,6 @@ export const router = express.Router();
  * The request body should be a JSON object of the form
  * ```
  * {
- *      'accessToken': string,
  *      'githubId': number,
  *      'deviceToken': string
  * }
@@ -20,7 +19,7 @@ export const router = express.Router();
  */
 router.post('/new', async (req, res) => {
     try {
-        const { accessToken, githubId, deviceToken } = req.body
+        const { githubId, deviceToken } = req.body
 
         const existingUser = await User.findOne({ githubId: githubId })
         if (existingUser) {
@@ -34,13 +33,12 @@ router.post('/new', async (req, res) => {
             }
 
             res.sendStatus(200);
+            return;
         }
 
         const user = await User.create({
-            accessToken: accessToken,
             githubId: githubId,
             deviceTokens: [deviceToken],
-            latestEvent: null,
             allowedTypes: Object.values(EventType)
         })
 

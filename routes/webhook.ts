@@ -50,7 +50,7 @@ router.post('/', async (req, res) => {
         res.status(500).send(`User with github id ${githubId} not found`)
     }
 
-    const event = await parsePayload(req.body, user.accessToken);
+    const event = await parsePayload(req.body);
     if (!event) {
         res.status(500).send(`Payload is undefined`)
     }

@@ -2,7 +2,6 @@ import { model, Schema, Model, Document } from 'mongoose';
 import {Event, EventType} from './event'
 
 export interface IUser {
-    accessToken: string
     githubId: number
     deviceTokens: string[]
     latestEvent?: Event,
@@ -10,7 +9,6 @@ export interface IUser {
 }
 
 const UserSchema = new Schema({
-    accessToken: { type: String, required: true },
     githubId: { type: Number, required: true, index: true },
     deviceTokens: { type: [String], required: true, default: [] },
     latestEvent: { type: Object },

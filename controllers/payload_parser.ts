@@ -11,35 +11,34 @@ function parseIssue(
     const avatarUrl = sender['avatar_url'];
     const repoName = repo['full_name'];
 
+    const url = issue['html_url'];
+    const number = issue['number'];
+    const title = issue['title'];
+    const timestamp = issue['updated_at']
+
     let eventType: EventType
     let description: string
 
     switch (action) {
         case 'opened':
             eventType = EventType.issueOpened;
-            description = `@${sender['login']} opened this issue`;
+            description = `Opened #${number}`;
             break;
 
         case 'closed':
             eventType = EventType.issueClosed;
-            description = `@${sender['login']} closed this issue`;
+            description = `Closed #${number}`;
             break;
 
         case 'assigned':
             eventType = EventType.issueAssigned;
-            const assigner = sender['login'];
             const assigneeName = assignee['login'];
-            description = `@${assigner} assigned this issue to @${assigneeName}`;
+            description = `Assigned #${number} to @${assigneeName}`;
             break;
 
         default:
             return undefined;
     }
-
-    const url = issue['html_url'];
-    const number = issue['number'];
-    const title = issue['title'];
-    const timestamp = issue['updated_at']
 
     return {
         eventType: eventType,
@@ -91,7 +90,7 @@ function parsePullRequestReview(
             break;
 
         case 'COMMENTED':
-            description = `@${reviewer} commented on this pull reuqest`;
+            description = `@${reviewer} commented on this pull request`;
             break;
 
         default:
@@ -116,7 +115,6 @@ async function parsePullRequest(
     pr: object,
     repo: object,
     requestedReviewer: object,
-    accessToken: string
 ): Promise<Event | undefined> {
     const avatarUrl = sender['avatar_url'];
     const repoName = repo['full_name'];
@@ -132,25 +130,15 @@ async function parsePullRequest(
     switch (action) {
         case 'opened':
             eventType = EventType.prOpened;
-            description = `@${sender['login']} opened this pull request`
+            description = `Opened #${number}`
             break;
 
         case 'closed':
             const isMerged = pr['merged'] === true;
             eventType = isMerged ? EventType.prMerged : EventType.prClosed;
-
-            if (isMerged) {
-                description = `@${pr['merged_by']['login']} merged ${pr['head']['ref']} into ${pr['base']['ref']}`;
-            } else {
-                const issue = await axios.get(pr['_links']['issue']['href'], {
-                    headers: {
-                        'Authorization': `token ${accessToken}`
-                    }
-                })
-
-                const closedBy = issue.data['closed_by']['login']
-                description = `@${closedBy} closed this pull request`
-            }
+            description = isMerged
+                ? `Merged #${number} into ${pr['base']['ref']}`
+                : `Closed #${number}`;
             break;
 
         case 'review_requested':
@@ -178,7 +166,7 @@ async function parsePullRequest(
     }
 }
 
-export async function parsePayload(payload: object, accessToken: string): Promise<Event | undefined> {
+export async function parsePayload(payload: object): Promise<Event | undefined> {
     console.log('Parsing payload')
 
     if (payload['pull_request_review']) {
@@ -200,7 +188,6 @@ export async function parsePayload(payload: object, accessToken: string): Promis
             payload['pull_request'],
             payload['repository'],
             payload['requested_reviewer'],
-            accessToken
         )
     }
 
