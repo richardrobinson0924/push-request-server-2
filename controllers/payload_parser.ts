@@ -1,4 +1,3 @@
-import axios from 'axios'
 import { Event, EventType } from "../models/event";
 
 function parseIssue(
@@ -109,13 +108,13 @@ function parsePullRequestReview(
     }
 }
 
-async function parsePullRequest(
+function parsePullRequest(
     action: string,
     sender: object,
     pr: object,
     repo: object,
     requestedReviewer: object,
-): Promise<Event | undefined> {
+): Event | undefined {
     const avatarUrl = sender['avatar_url'];
     const repoName = repo['full_name'];
 
@@ -166,7 +165,7 @@ async function parsePullRequest(
     }
 }
 
-export async function parsePayload(payload: object): Promise<Event | undefined> {
+export function parsePayload(payload: object): Event | undefined {
     console.log('Parsing payload')
 
     if (payload['pull_request_review']) {
@@ -182,7 +181,7 @@ export async function parsePayload(payload: object): Promise<Event | undefined> 
 
     if (payload['pull_request']) {
         console.log('Parsing pull request')
-        return await parsePullRequest(
+        return parsePullRequest(
             payload['action'],
             payload['sender'],
             payload['pull_request'],
@@ -201,6 +200,4 @@ export async function parsePayload(payload: object): Promise<Event | undefined> 
             payload['repository']
         )
     }
-
-    return undefined;
 }

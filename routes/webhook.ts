@@ -1,7 +1,7 @@
 import express from 'express'
 import {User} from "../models/user";
 import {Installation} from "../models/installation";
-import { APNS, SilentNotification } from "apns2";
+import { SilentNotification } from "apns2";
 import {apnsClient} from "../index";
 import {parsePayload} from "../controllers/payload_parser";
 
@@ -15,7 +15,7 @@ const validEvents = [
 ]
 
 router.post('/', async (req, res) => {
-    console.log(`webhook data received: ${JSON.stringify(req.body)}\n\n`)
+    console.log('webhook received')
 
     if (!validEvents.some(e => Object.keys(req.body).includes(e))) {
         console.log('webhook event not valid')
@@ -52,9 +52,14 @@ router.post('/', async (req, res) => {
         return;
     }
 
-    const event = await parsePayload(req.body);
+    const event = parsePayload(req.body);
     if (!event) {
         res.status(500).send(`Payload is undefined`)
+        return;
+    }
+
+    if (!user.allowedTypes.includes(event.eventType)) {
+        res.status(200).send(`event type ${event.eventType} excluded.`)
         return;
     }
 

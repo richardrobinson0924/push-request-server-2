@@ -5,6 +5,63 @@ import {EventType} from "../models/event";
 export const router = express.Router();
 
 /**
+ * [GET] /:id/allowed_types
+ * Gets a user's allowed notification types
+ *
+ * Parameters:
+ * - id: the user's github id
+ *
+ * Response:
+ * A JSON object of the form
+ * ```
+ * {
+ *     allowedTypes: EventType[]
+ * }
+ * ```
+ */
+router.get('/:id/allowed_types', async (req, res) => {
+    const githubId = parseInt(req.params['id']);
+
+    const user = await User.findOne({ githubId: githubId })
+    if (!user) {
+        res.sendStatus(404);
+    }
+
+    res.json({ allowedTypes: user.allowedTypes })
+})
+
+/**
+ * [POST] /:id/allowed_types
+ * Sets a user's allowed notification types
+ *
+ * Parameters:
+ * - id: the user's github id
+ *
+ * Request Body:
+ * A JSON object of the form
+ * ```
+ * {
+ *     allowedTypes: EventType[]
+ * }
+ * ```
+ */
+router.post('/:id/allowed_types', async (req, res) => {
+    const githubId = parseInt(req.params['id']);
+
+    try {
+        await User.findOneAndUpdate(
+        { githubId: githubId },
+        { allowedTypes: req.body['allowedTypes'] }
+        )
+
+        res.sendStatus(200);
+    } catch (e) {
+        console.log('Failed to update user')
+        res.sendStatus(500);
+    }
+})
+
+/**
  * [POST] /
  * Creates a new `User` from the given data. If a `User` with the github id already exists, the
  * `User` is updated with the new device token, if any.
@@ -13,13 +70,14 @@ export const router = express.Router();
  * ```
  * {
  *      'githubId': number,
- *      'deviceToken': string
+ *      'deviceToken': string,
+ *      'allowedTypes': EventType[]
  * }
  * ```
  */
 router.post('/new', async (req, res) => {
     try {
-        const { githubId, deviceToken } = req.body
+        const { githubId, deviceToken, allowedTypes } = req.body
 
         const existingUser = await User.findOne({ githubId: githubId })
         if (existingUser) {
@@ -39,7 +97,7 @@ router.post('/new', async (req, res) => {
         const user = await User.create({
             githubId: githubId,
             deviceTokens: [deviceToken],
-            allowedTypes: Object.values(EventType)
+            allowedTypes: allowedTypes as EventType[]
         })
 
         console.log(`User created: ${JSON.stringify(user)}`)
