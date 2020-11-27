@@ -1,6 +1,7 @@
 import express from 'express'
 import {User} from "../models/user";
 import {EventType} from "../models/event";
+import {HTTPStatusCode} from "../lib/utils";
 
 export const router = express.Router();
 
@@ -24,7 +25,8 @@ router.get('/:id/allowed_types', async (req, res) => {
 
     const user = await User.findOne({ githubId: githubId })
     if (!user) {
-        res.sendStatus(404);
+        res.sendStatus(HTTPStatusCode.NOT_FOUND);
+        return;
     }
 
     res.json({ allowedTypes: user.allowedTypes })
@@ -90,7 +92,7 @@ router.post('/new', async (req, res) => {
                 await existingUser.save()
             }
 
-            res.sendStatus(200);
+            res.sendStatus(HTTPStatusCode.OK);
             return;
         }
 
@@ -101,10 +103,10 @@ router.post('/new', async (req, res) => {
         })
 
         console.log(`User created: ${JSON.stringify(user)}`)
-        res.sendStatus(201);
+        res.sendStatus(HTTPStatusCode.CREATED);
     } catch (e) {
         console.log(`Failed to create user: ${JSON.stringify(req.body)}`)
-        res.sendStatus(500);
+        res.sendStatus(HTTPStatusCode.INTERNAL_SERVER_ERROR);
     }
 })
 
@@ -142,6 +144,6 @@ router.get('/latest-event', async (req, res) => {
         res.json(event)
     } catch (e) {
         console.log('Failed to find user');
-        res.sendStatus(500);
+        res.sendStatus(HTTPStatusCode.INTERNAL_SERVER_ERROR);
     }
 })

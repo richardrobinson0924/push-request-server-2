@@ -2,6 +2,7 @@ import express from 'express'
 import mongoose from 'mongoose'
 import { router as webhookRouter } from "./routes/webhook";
 import { router as userRouter } from "./routes/user";
+import {HTTPStatusCode} from "./lib/utils";
 
 if (process.env.NODE_ENV !== 'production') {
     require('dotenv').config()
@@ -18,7 +19,7 @@ export const app = express();
 
 app.use(express.json());
 
-app.get('/', (req, res) => res.sendStatus(200))
+app.get('/', (_, res) => res.sendStatus(HTTPStatusCode.OK))
 
 app.use('/receive-webhook', webhookRouter);
 app.use('/users', userRouter)

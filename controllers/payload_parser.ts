@@ -1,4 +1,4 @@
-import { Event, EventType } from "../models/event";
+import {Event, EventCategory, EventType} from "../models/event";
 
 function parseIssue(
     action: string,
@@ -165,39 +165,38 @@ function parsePullRequest(
     }
 }
 
-export function parsePayload(payload: object): Event | undefined {
-    console.log('Parsing payload')
+export function parsePayload(payload: object, category: EventCategory): Event | undefined {
+    console.log(`Parsing payload with category ${category}`)
 
-    if (payload['pull_request_review']) {
-        console.log('Parsing pull request review')
-        return parsePullRequestReview(
-            payload['action'],
-            payload['sender'],
-            payload['pull_request'],
-            payload['review'],
-            payload['repository']
-        )
-    }
+    switch (category) {
+        case EventCategory.pullRequestReview:
+            return parsePullRequestReview(
+                payload['action'],
+                payload['sender'],
+                payload['pull_request'],
+                payload['review'],
+                payload['repository']
+            )
 
-    if (payload['pull_request']) {
-        console.log('Parsing pull request')
-        return parsePullRequest(
-            payload['action'],
-            payload['sender'],
-            payload['pull_request'],
-            payload['repository'],
-            payload['requested_reviewer'],
-        )
-    }
+        case EventCategory.pullRequest:
+            return parsePullRequest(
+                payload['action'],
+                payload['sender'],
+                payload['pull_request'],
+                payload['repository'],
+                payload['requested_reviewer'],
+            )
 
-    if (payload['issue']) {
-        console.log('Parsing issue')
-        return parseIssue(
-            payload['action'],
-            payload['sender'],
-            payload['issue'],
-            payload['assignee'],
-            payload['repository']
-        )
+        case EventCategory.issues:
+            return parseIssue(
+                payload['action'],
+                payload['sender'],
+                payload['issue'],
+                payload['assignee'],
+                payload['repository']
+            )
+
+        default:
+            return undefined;
     }
 }

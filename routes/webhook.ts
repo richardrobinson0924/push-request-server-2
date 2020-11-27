@@ -4,80 +4,83 @@ import {Installation} from "../models/installation";
 import { SilentNotification } from "apns2";
 import {apnsClient} from "../index";
 import {parsePayload} from "../controllers/payload_parser";
+import {getEnumKeyByEnumValue, HTTPStatusCode} from "../lib/utils";
+import {EventCategory} from "../models/event";
 
 export const router = express.Router();
 
-const validEvents = [
-    'installation',
-    'issue',
-    'pull_request',
-    'pull_request_review'
-]
-
 router.post('/', async (req, res) => {
-    console.log('webhook received')
+    const eventCategoryName = req.header('X-GitHub-Event');
+    const guid = req.header('X-GitHub-Delivery');
+    console.log(`webhook received: ${eventCategoryName} (${guid})`);
 
-    if (!validEvents.some(e => Object.keys(req.body).includes(e))) {
-        console.log('webhook event not valid')
-        res.sendStatus(200)
-        return
+    const eventCategory = getEnumKeyByEnumValue(EventCategory, eventCategoryName) as EventCategory | undefined;
+    if (!eventCategory) {
+        console.log(`event category ${eventCategoryName} invalid`);
+        res.sendStatus(HTTPStatusCode.NO_CONTENT);
+        return;
     }
 
-    if (req.body['installation'] && req.body['installation']['account']) {
+    if (eventCategory === EventCategory.installation) {
         if (req.body['action'] === 'created') {
             await Installation.create({
                 installationId: req.body['installation']['id'],
                 githubId: req.body['installation']['account']['id']
-            })
+            });
         }
 
-        res.sendStatus(200);
+        res.sendStatus(HTTPStatusCode.CREATED);
         return;
     }
 
     const githubId: number = await Installation
         .findOne({ installationId: req.body['installation']['id'] })
-        .map(installation => installation.githubId)
+        .map(installation => installation.githubId);
 
-    console.log(`github id is ${githubId}`)
+    console.log(`github id is ${githubId}`);
 
     if (!githubId) {
-        res.status(500).send(`Installation with id ${req.body['installation']['id']} not found.`)
+        console.error(`Installation with id ${req.body['installation']['id']} not found.`);
+        res.sendStatus(HTTPStatusCode.NOT_FOUND);
         return;
     }
 
     const user = await User.findOne({ githubId: githubId })
     if (!user) {
-        res.status(500).send(`User with github id ${githubId} not found`)
+        console.error(`User with github id ${githubId} not found`);
+        res.sendStatus(HTTPStatusCode.NOT_FOUND);
         return;
     }
 
-    const event = parsePayload(req.body);
+    const event = parsePayload(req.body, eventCategory);
     if (!event) {
-        res.status(500).send(`Payload is undefined`)
+        console.error(`Payload is undefined`);
+        res.sendStatus(HTTPStatusCode.INTERNAL_SERVER_ERROR);
         return;
     }
 
     if (!user.allowedTypes.includes(event.eventType)) {
-        res.status(200).send(`event type ${event.eventType} excluded.`)
+        console.log(`event type ${event.eventType} excluded.`);
+        res.sendStatus(HTTPStatusCode.NO_CONTENT);
         return;
     }
 
-    user.latestEvent = event
+    user.latestEvent = event;
     await user.save();
 
     for (const deviceToken of user.deviceTokens) {
-        const sn = new SilentNotification(deviceToken)
+        const sn = new SilentNotification(deviceToken);
 
         try {
-            console.log('Sending APNS notification')
-            await apnsClient.send(sn)
-            res.sendStatus(200);
+            console.log('Sending APNS notification');
+            await apnsClient.send(sn);
         } catch (e) {
-            const message = `Error sending notification: ${JSON.stringify(e)}`
-            console.log(message)
-            res.status(500).send(message)
+            const message = `Error sending notification: ${JSON.stringify(e)}`;
+            console.log(message);
+            res.sendStatus(HTTPStatusCode.INTERNAL_SERVER_ERROR);
             return;
         }
     }
+
+    res.sendStatus(HTTPStatusCode.OK);
 })
