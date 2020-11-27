@@ -4,7 +4,6 @@ function parseIssue(
     action: string,
     sender: object,
     issue: object,
-    assignee: object,
     repo: object
 ): Event | undefined {
     const avatarUrl = sender['avatar_url'];
@@ -14,6 +13,7 @@ function parseIssue(
     const number = issue['number'];
     const title = issue['title'];
     const timestamp = issue['updated_at']
+    const assignee = issue['assignee']
 
     let eventType: EventType
     let description: string
@@ -61,7 +61,6 @@ function parsePullRequestReview(
     const avatarUrl = sender['avatar_url'];
     const repoName = repo['full_name'];
 
-    const reviewer = sender['login'];
     const eventType = EventType.prReviewed
 
     if (action !== 'submitted') {
@@ -76,20 +75,20 @@ function parsePullRequestReview(
     let description;
 
     switch (review['state']) {
-        case 'CHANGES_REQUESTED':
-            description = `@${reviewer} requested changes.`
+        case 'changes_requested':
+            description = `Requested changes on #${number}`
             break;
 
-        case 'APPROVED':
-            description = `@${reviewer} approved this pull request`;
+        case 'approved':
+            description = `Approved #${number}`;
             break;
 
-        case 'DISMISSED':
-            description = `@${reviewer} dismissed this pull request`;
+        case 'dismissed':
+            description = `Dismissed #${number}`;
             break;
 
-        case 'COMMENTED':
-            description = `@${reviewer} commented on this pull request`;
+        case 'commented':
+            description = `Commented on #${number}`;
             break;
 
         default:
@@ -192,7 +191,6 @@ export function parsePayload(payload: object, category: EventCategory): Event | 
                 payload['action'],
                 payload['sender'],
                 payload['issue'],
-                payload['assignee'],
                 payload['repository']
             )
 

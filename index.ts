@@ -7,11 +7,7 @@ import { app } from './app'
 import http from 'http'
 import {AddressInfo} from "net";
 import {APNS} from "apns2";
-
-/**
- * Get port from environment and store in Express.
- */
-app.set('port', process.env.PORT);
+import {MockAPNS} from "./tests/mock_apns";
 
 /**
  * Create HTTP server.
@@ -35,7 +31,7 @@ function onListening() {
     console.log(`Listening on ${bind}`)
 }
 
-export const apnsClient = new APNS({
+export const apnsClient = process.env.NODE_ENV === 'test' ? new MockAPNS() : new APNS({
     team: process.env.APNS_ISS,
     keyId: process.env.APNS_KID,
     signingKey: process.env.APNS_AUTH_KEY,
