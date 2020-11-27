@@ -7,12 +7,13 @@ import {server} from "../index";
 
 const request = supertest(app);
 
-beforeAll(async () => {
+beforeAll(async (done) => {
     const url = `mongodb://127.0.0.1/test`
     await mongoose.connect(url, {
         useNewUrlParser: true,
         useUnifiedTopology: true
     })
+    done();
 });
 
 afterAll(async (done) => {
@@ -21,8 +22,9 @@ afterAll(async (done) => {
     done();
 })
 
-afterEach(async () => {
+afterEach(async (done) => {
     await User.deleteMany({})
+    done();
 })
 
 test('gets allowed types', async (done) => {
