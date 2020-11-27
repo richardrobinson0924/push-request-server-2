@@ -13,9 +13,13 @@ const mongooseOptions = {
     useNewUrlParser: true
 }
 
-mongoose.connect(process.env.DB_URI, mongooseOptions).then(() => console.log('connected to database'))
+if (process.env.NODE_ENV !== 'test') {
+    mongoose.connect(process.env.DB_URI, mongooseOptions).then(() => console.log('connected to database'))
+}
 
 export const app = express();
+
+app.set('port', process.env.PORT);
 
 app.use(express.json());
 
