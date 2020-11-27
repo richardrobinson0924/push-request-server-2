@@ -12,7 +12,7 @@ import {MockAPNS} from "./tests/mock_apns";
 /**
  * Create HTTP server.
  */
-const server = http.createServer(app);
+export const server = http.createServer(app);
 
 /**
  * Listen on provided port, on all network interfaces.

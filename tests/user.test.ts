@@ -3,6 +3,7 @@ import {app} from '../app'
 import supertest from "supertest";
 import {EventType} from "../models/event";
 import {User} from "../models/user";
+import {server} from "../index";
 
 const request = supertest(app);
 
@@ -13,6 +14,12 @@ beforeAll(async () => {
         useUnifiedTopology: true
     })
 });
+
+afterAll(async (done) => {
+    await mongoose.disconnect();
+    server.close();
+    done();
+})
 
 afterEach(async () => {
     await User.deleteMany({})
