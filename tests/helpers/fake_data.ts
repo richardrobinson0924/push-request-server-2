@@ -1,9 +1,11 @@
+import {Payload} from "../../models/payload";
+
 export type PullRequestAction = 'opened' | 'edited' | 'closed' | 'assigned' | 'unassigned' |
     'review_requested' | 'review_request_removed' | 'ready_for_review' | 'labeled' | 'unlabeled' |
     'synchronize' | 'locked' | 'unlocked' | 'reopened';
 
 
-export function makePullRequestPayload(action: PullRequestAction, isMerged: boolean) {
+export function makePullRequestPayload(action: PullRequestAction, isMerged: boolean): Payload {
     return {
         "action": action,
         "number": 2,
@@ -476,6 +478,9 @@ export function makePullRequestPayload(action: PullRequestAction, isMerged: bool
             "received_events_url": "https://api.github.com/users/Codertocat/received_events",
             "type": "User",
             "site_admin": false
+        },
+        "installation": {
+            "id": 123
         }
     }
 }
@@ -483,7 +488,7 @@ export function makePullRequestPayload(action: PullRequestAction, isMerged: bool
 export type PullRequestReviewAction = 'submitted' | 'edited' | 'dismissed';
 export type PullRequestReviewState = 'commented' | 'changes_requested' | 'approved' | 'dismissed'
 
-export function makePullRequestReviewPayload(action: PullRequestReviewAction, state: PullRequestReviewState): object {
+export function makePullRequestReviewPayload(action: PullRequestReviewAction, state: PullRequestReviewState): Payload {
     return {
         "action": action,
         "review": {
@@ -969,7 +974,7 @@ export type IssueAction = 'opened' | 'edited' | 'deleted' | 'pinned' | 'unpinned
     'reopened' | 'assigned' | 'unassigned' | 'labeled' | 'unlabeled' | 'locked' | 'unlocked' |
     'transferred' | 'milestoned' | 'demilestoned';
 
-export function makeIssuePayload(action: IssueAction): object {
+export function makeIssuePayload(action: IssueAction): Payload {
     return {
         "action": action,
         "issue": {
@@ -1215,6 +1220,9 @@ export function makeIssuePayload(action: IssueAction): object {
             "received_events_url": "https://api.github.com/users/Codertocat/received_events",
             "type": "User",
             "site_admin": false
+        },
+        "installation": {
+            "id": 123
         }
     }
 }

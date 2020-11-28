@@ -4,17 +4,13 @@ import { router as webhookRouter } from "./routes/webhook";
 import { router as userRouter } from "./routes/user";
 import {HTTPStatusCode} from "./lib/utils";
 
-if (process.env.NODE_ENV !== 'production') {
-    require('dotenv').config()
-}
-
 const mongooseOptions = {
     useUnifiedTopology: true,
     useNewUrlParser: true
 }
 
 if (process.env.NODE_ENV !== 'test') {
-    mongoose.connect(process.env.DB_URI, mongooseOptions).then(() => console.log('connected to database'))
+    mongoose.connect(process.env.DB_URI!, mongooseOptions).then(() => console.log('connected to database'))
 }
 
 export const app = express();

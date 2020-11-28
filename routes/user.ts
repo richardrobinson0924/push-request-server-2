@@ -137,9 +137,20 @@ router.get('/latest-event', async (req, res) => {
         const githubId = req.headers.authorization
         console.log(`Finding user with id ${githubId}`)
 
+        if (!githubId) {
+            console.log('id is undefined')
+            res.sendStatus(HTTPStatusCode.BAD_REQUEST);
+            return;
+        }
+
         const event = await User
             .findOne({ githubId: parseInt(githubId) })
-            .map(user => user.latestEvent)
+            .map(user => user?.latestEvent)
+
+        if (!event) {
+            res.sendStatus(HTTPStatusCode.NO_CONTENT);
+            return;
+        }
 
         res.json(event)
     } catch (e) {

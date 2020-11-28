@@ -1,11 +1,3 @@
-export function getEnumKeyByEnumValue<T extends { [index: string]: string }>(
-    myEnum: T,
-    enumValue: string
-): keyof T | undefined {
-    let keys = Object.keys(myEnum).filter(x => myEnum[x] == enumValue);
-    return keys.length > 0 ? keys[0] : undefined;
-}
-
 export enum HTTPStatusCode {
     OK = 200,
     CREATED = 201,

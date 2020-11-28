@@ -1,22 +1,28 @@
 import express from 'express'
 import {User} from "../models/user";
 import {Installation} from "../models/installation";
-import { SilentNotification } from "apns2";
-import {apnsClient} from "../index";
+import {APNS, SilentNotification} from "apns2";
 import {parsePayload} from "../controllers/payload_parser";
-import {getEnumKeyByEnumValue, HTTPStatusCode} from "../lib/utils";
+import {HTTPStatusCode} from "../lib/utils";
 import {EventCategory} from "../models/event";
 
 export const router = express.Router();
 
-router.post('/', async (req, res) => {
-    const eventCategoryName = req.header('X-GitHub-Event');
-    const guid = req.header('X-GitHub-Delivery');
-    console.log(`webhook received: ${eventCategoryName} (${guid})`);
+const apnsClient = new APNS({
+    team: process.env.APNS_ISS ?? '',
+    keyId: process.env.APNS_KID ?? '',
+    signingKey: process.env.APNS_AUTH_KEY ?? '',
+    host: process.env.APNS_SERVER ?? '',
+    defaultTopic: process.env.APNS_TOPIC ?? ''
+})
 
-    const eventCategory = getEnumKeyByEnumValue(EventCategory, eventCategoryName) as EventCategory | undefined;
+router.post('/', async (req, res) => {
+    const eventCategory = req.header('X-GitHub-Event') as EventCategory | undefined;
+    const guid = req.header('X-GitHub-Delivery');
+    console.log(`webhook received: ${eventCategory} (${guid})`);
+
     if (!eventCategory) {
-        console.log(`event category ${eventCategoryName} invalid`);
+        console.log(`event category ${eventCategory} invalid`);
         res.sendStatus(HTTPStatusCode.NO_CONTENT);
         return;
     }
@@ -33,9 +39,9 @@ router.post('/', async (req, res) => {
         return;
     }
 
-    const githubId: number = await Installation
+    const githubId: number | undefined = await Installation
         .findOne({ installationId: req.body['installation']['id'] })
-        .map(installation => installation.githubId);
+        .map(installation => installation?.githubId);
 
     console.log(`github id is ${githubId}`);
 

@@ -1,31 +1,6 @@
-import mongoose from "mongoose";
-import {app} from '../app'
-import supertest from "supertest";
-import {EventType} from "../models/event";
+import { request } from "./helpers/route_test_support";
 import {User} from "../models/user";
-import {server} from "../index";
-
-const request = supertest(app);
-
-beforeAll(async (done) => {
-    const url = `mongodb://127.0.0.1/test`
-    await mongoose.connect(url, {
-        useNewUrlParser: true,
-        useUnifiedTopology: true
-    })
-    done();
-});
-
-afterAll(async (done) => {
-    await mongoose.disconnect();
-    server.close();
-    done();
-})
-
-afterEach(async (done) => {
-    await User.deleteMany({})
-    done();
-})
+import {EventType} from "../models/event";
 
 test('gets allowed types', async (done) => {
     await User.create({
@@ -59,7 +34,7 @@ test('set allowed types', async (done) => {
 
     const user = await User.findOne({ githubId: 1 })
 
-    expect(user.allowedTypes).toContain(EventType.prMerged)
+    expect(user!.allowedTypes).toContain(EventType.prMerged)
 
     done()
 })
@@ -76,9 +51,9 @@ test('creates user', async (done) => {
 
     const user = await User.findOne({ githubId: 1 });
 
-    expect(user.deviceTokens).toContain('token');
-    expect(user.latestEvent).toBeFalsy();
-    expect(user.allowedTypes).toContain(EventType.issueOpened)
+    expect(user!.deviceTokens).toContain('token');
+    expect(user!.latestEvent).toBeFalsy();
+    expect(user!.allowedTypes).toContain(EventType.issueOpened)
 
     const postData2 = {
         githubId: 1,
@@ -90,7 +65,7 @@ test('creates user', async (done) => {
     expect(res2.status).toBe(200);
 
     const user2 = await User.findOne({ githubId: 1 });
-    expect(user2.deviceTokens).toContain('token2')
+    expect(user2!.deviceTokens).toContain('token2')
 
     done()
 })

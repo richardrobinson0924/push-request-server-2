@@ -1,4 +1,4 @@
-import * as FakeData from './fake_data'
+import * as FakeData from './helpers/fake_data'
 import {parsePayload} from "../controllers/payload_parser";
 import {Event, EventCategory, EventType} from "../models/event";
 
