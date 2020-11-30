@@ -1,11 +1,11 @@
-import {Payload} from "../../models/payload";
+import {EventPayloads} from "@octokit/webhooks";
 
 export type PullRequestAction = 'opened' | 'edited' | 'closed' | 'assigned' | 'unassigned' |
     'review_requested' | 'review_request_removed' | 'ready_for_review' | 'labeled' | 'unlabeled' |
     'synchronize' | 'locked' | 'unlocked' | 'reopened';
 
 
-export function makePullRequestPayload(action: PullRequestAction, isMerged: boolean): Payload {
+export function makePullRequestPayload(action: PullRequestAction, isMerged: boolean, installationId: number): EventPayloads.WebhookPayloadPullRequest {
     return {
         "action": action,
         "number": 2,
@@ -49,7 +49,28 @@ export function makePullRequestPayload(action: PullRequestAction, isMerged: bool
             "merge_commit_sha": null,
             "assignee": null,
             "assignees": [],
-            "requested_reviewers": [],
+            "requested_reviewers": [
+                {
+                    "login": "Codertocat2",
+                    "id": 21031067,
+                    "node_id": "MDQ6VXNlcjIxMDMxMDY3",
+                    "avatar_url": "https://avatars1.githubusercontent.com/u/21031067?v=4",
+                    "gravatar_id": "",
+                    "url": "https://api.github.com/users/Codertocat",
+                    "html_url": "https://github.com/Codertocat",
+                    "followers_url": "https://api.github.com/users/Codertocat/followers",
+                    "following_url": "https://api.github.com/users/Codertocat/following{/other_user}",
+                    "gists_url": "https://api.github.com/users/Codertocat/gists{/gist_id}",
+                    "starred_url": "https://api.github.com/users/Codertocat/starred{/owner}{/repo}",
+                    "subscriptions_url": "https://api.github.com/users/Codertocat/subscriptions",
+                    "organizations_url": "https://api.github.com/users/Codertocat/orgs",
+                    "repos_url": "https://api.github.com/users/Codertocat/repos",
+                    "events_url": "https://api.github.com/users/Codertocat/events{/privacy}",
+                    "received_events_url": "https://api.github.com/users/Codertocat/received_events",
+                    "type": "User",
+                    "site_admin": false
+                }
+            ],
             "requested_teams": [],
             "labels": [],
             "milestone": null,
@@ -439,26 +460,6 @@ export function makePullRequestPayload(action: PullRequestAction, isMerged: bool
             "watchers": 0,
             "default_branch": "master"
         },
-        "requested_reviewer": {
-            "login": "Codertocat2",
-            "id": 21031067,
-            "node_id": "MDQ6VXNlcjIxMDMxMDY3",
-            "avatar_url": "https://avatars1.githubusercontent.com/u/21031067?v=4",
-            "gravatar_id": "",
-            "url": "https://api.github.com/users/Codertocat",
-            "html_url": "https://github.com/Codertocat",
-            "followers_url": "https://api.github.com/users/Codertocat/followers",
-            "following_url": "https://api.github.com/users/Codertocat/following{/other_user}",
-            "gists_url": "https://api.github.com/users/Codertocat/gists{/gist_id}",
-            "starred_url": "https://api.github.com/users/Codertocat/starred{/owner}{/repo}",
-            "subscriptions_url": "https://api.github.com/users/Codertocat/subscriptions",
-            "organizations_url": "https://api.github.com/users/Codertocat/orgs",
-            "repos_url": "https://api.github.com/users/Codertocat/repos",
-            "events_url": "https://api.github.com/users/Codertocat/events{/privacy}",
-            "received_events_url": "https://api.github.com/users/Codertocat/received_events",
-            "type": "User",
-            "site_admin": false
-        },
         "sender": {
             "login": "Codertocat",
             "id": 21031067,
@@ -480,7 +481,8 @@ export function makePullRequestPayload(action: PullRequestAction, isMerged: bool
             "site_admin": false
         },
         "installation": {
-            "id": 123
+            "id": installationId,
+            "node_id": ""
         }
     }
 }
@@ -488,7 +490,7 @@ export function makePullRequestPayload(action: PullRequestAction, isMerged: bool
 export type PullRequestReviewAction = 'submitted' | 'edited' | 'dismissed';
 export type PullRequestReviewState = 'commented' | 'changes_requested' | 'approved' | 'dismissed'
 
-export function makePullRequestReviewPayload(action: PullRequestReviewAction, state: PullRequestReviewState): Payload {
+export function makePullRequestReviewPayload(action: PullRequestReviewAction, state: PullRequestReviewState, installationId: number): EventPayloads.WebhookPayloadPullRequestReview {
     return {
         "action": action,
         "review": {
@@ -966,6 +968,10 @@ export function makePullRequestReviewPayload(action: PullRequestReviewAction, st
             "received_events_url": "https://api.github.com/users/Codertocat/received_events",
             "type": "User",
             "site_admin": false
+        },
+        "installation": {
+            "id": installationId,
+            "node_id": ""
         }
     }
 }
@@ -974,7 +980,7 @@ export type IssueAction = 'opened' | 'edited' | 'deleted' | 'pinned' | 'unpinned
     'reopened' | 'assigned' | 'unassigned' | 'labeled' | 'unlabeled' | 'locked' | 'unlocked' |
     'transferred' | 'milestoned' | 'demilestoned';
 
-export function makeIssuePayload(action: IssueAction): Payload {
+export function makeIssuePayload(action: IssueAction, installationId: number): EventPayloads.WebhookPayloadIssues {
     return {
         "action": action,
         "issue": {
@@ -1222,7 +1228,8 @@ export function makeIssuePayload(action: IssueAction): Payload {
             "site_admin": false
         },
         "installation": {
-            "id": 123
+            "id": installationId,
+            "node_id": ""
         }
     }
 }

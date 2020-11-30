@@ -1,7 +1,7 @@
 import express from 'express'
 import mongoose from 'mongoose'
-import { router as webhookRouter } from "./routes/webhook";
-import { router as userRouter } from "./routes/user";
+import {router as webhookRouter} from "./routes/webhook";
+import {router as userRouter} from "./routes/user";
 import {HTTPStatusCode} from "./lib/utils";
 
 const mongooseOptions = {

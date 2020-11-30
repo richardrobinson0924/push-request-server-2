@@ -9,13 +9,6 @@ export enum EventType {
     prReviewed = 'prReviewed'
 }
 
-export enum EventCategory {
-    installation = 'installation',
-    issues = 'issues',
-    pullRequest = 'pull_request',
-    pullRequestReview = 'pull_request_review'
-}
-
 export interface Event {
     eventType: EventType
     repoName: string

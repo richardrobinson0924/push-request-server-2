@@ -1,10 +1,15 @@
 import * as FakeData from './helpers/fake_data'
-import {parsePayload} from "../controllers/payload_parser";
-import {Event, EventCategory, EventType} from "../models/event";
+import {PayloadParser} from "../controllers/payload_parser";
+import {Event, EventType} from "../models/event";
+import {Webhooks} from "@octokit/webhooks";
 
-test('parses issues', () => {
-    const payload = FakeData.makeIssuePayload('opened')
-    const actualEvent = parsePayload(payload, EventCategory.issues);
+const webhooks = new Webhooks({secret: "0"});
+const parser = new PayloadParser(webhooks);
+
+test('parses issues', async (done) => {
+    const payload = FakeData.makeIssuePayload('opened', 0)
+    const actualEvent = await parser.getReceivedEvent('', 'issues', payload);
+
     const expectedEvent: Event = {
         eventType: EventType.issueOpened,
         repoName: 'Codertocat/Hello-World',
@@ -18,8 +23,9 @@ test('parses issues', () => {
 
     expect(actualEvent).toEqual(expectedEvent)
 
-    const payload2 = FakeData.makeIssuePayload('closed')
-    const actualEvent2 = parsePayload(payload2, EventCategory.issues);
+    const payload2 = FakeData.makeIssuePayload('closed', 0)
+    const actualEvent2 = await parser.getReceivedEvent('', 'issues', payload2);
+
     const expectedEvent2: Event = {
         eventType: EventType.issueClosed,
         repoName: 'Codertocat/Hello-World',
@@ -33,8 +39,10 @@ test('parses issues', () => {
 
     expect(actualEvent2).toEqual(expectedEvent2)
 
-    const payload3 = FakeData.makeIssuePayload('assigned')
-    const actualEvent3 = parsePayload(payload3, EventCategory.issues);
+    const payload3 = FakeData.makeIssuePayload('assigned', 0)
+    await webhooks.receive({id: '', name: 'issues', payload: payload3})
+    const actualEvent3 = await parser.getReceivedEvent('', 'issues', payload3);
+
     const expectedEvent3: Event = {
         eventType: EventType.issueAssigned,
         repoName: 'Codertocat/Hello-World',
@@ -47,11 +55,14 @@ test('parses issues', () => {
     }
 
     expect(actualEvent3).toEqual(expectedEvent3)
+
+    done()
 })
 
-test('parses pull request reviews', () => {
-    const payload = FakeData.makePullRequestReviewPayload('submitted', 'approved');
-    const actualEvent = parsePayload(payload, EventCategory.pullRequestReview);
+test('parses pull request reviews', async (done) => {
+    const payload = FakeData.makePullRequestReviewPayload('submitted', 'approved', 0);
+    const actualEvent = await parser.getReceivedEvent('', 'pull_request_review', payload);
+
     const expectedEvent: Event = {
         eventType: EventType.prReviewed,
         repoName: 'Codertocat/Hello-World',
@@ -64,11 +75,14 @@ test('parses pull request reviews', () => {
     }
 
     expect(actualEvent).toEqual(expectedEvent);
+
+    done();
 })
 
-test('parses pull requests', () => {
-    const payload = FakeData.makePullRequestPayload('opened', false);
-    const actualEvent = parsePayload(payload, EventCategory.pullRequest);
+test('parses pull requests', async (done) => {
+    const payload = FakeData.makePullRequestPayload('opened', false, 0);
+    const actualEvent = await parser.getReceivedEvent('', 'pull_request', payload);
+
     const expectedEvent: Event = {
         eventType: EventType.prOpened,
         repoName: 'Codertocat/Hello-World',
@@ -82,8 +96,9 @@ test('parses pull requests', () => {
 
     expect(actualEvent).toEqual(expectedEvent)
 
-    const payload2 = FakeData.makePullRequestPayload('closed', false);
-    const actualEvent2 = parsePayload(payload2, EventCategory.pullRequest);
+    const payload2 = FakeData.makePullRequestPayload('closed', false, 0);
+    const actualEvent2 = await parser.getReceivedEvent('', 'pull_request', payload2);
+
     const expectedEvent2: Event = {
         eventType: EventType.prClosed,
         repoName: 'Codertocat/Hello-World',
@@ -97,8 +112,9 @@ test('parses pull requests', () => {
 
     expect(actualEvent2).toEqual(expectedEvent2)
 
-    const payload3 = FakeData.makePullRequestPayload('closed', true);
-    const actualEvent3 = parsePayload(payload3, EventCategory.pullRequest);
+    const payload3 = FakeData.makePullRequestPayload('closed', true, 0);
+    const actualEvent3 = await parser.getReceivedEvent('', 'pull_request', payload3);
+
     const expectedEvent3: Event = {
         eventType: EventType.prMerged,
         repoName: 'Codertocat/Hello-World',
@@ -112,8 +128,9 @@ test('parses pull requests', () => {
 
     expect(actualEvent3).toEqual(expectedEvent3)
 
-    const payload4 = FakeData.makePullRequestPayload('review_requested', false);
-    const actualEvent4 = parsePayload(payload4, EventCategory.pullRequest);
+    const payload4 = FakeData.makePullRequestPayload('review_requested', false, 0);
+    const actualEvent4 = await parser.getReceivedEvent('', 'pull_request', payload4);
+
     const expectedEvent4: Event = {
         eventType: EventType.prReviewRequested,
         repoName: 'Codertocat/Hello-World',
@@ -126,4 +143,6 @@ test('parses pull requests', () => {
     }
 
     expect(actualEvent4).toEqual(expectedEvent4)
+
+    done();
 })

@@ -1,67 +1,76 @@
 import express from 'express'
-import {User} from "../models/user";
+import {IUser, User} from "../models/user";
 import {Installation} from "../models/installation";
 import {APNS, SilentNotification} from "apns2";
-import {parsePayload} from "../controllers/payload_parser";
 import {HTTPStatusCode} from "../lib/utils";
-import {EventCategory} from "../models/event";
+import {EventPayloads, WebhookEvent} from "@octokit/webhooks";
+import {PayloadParser} from '../controllers/payload_parser'
+import * as mongoose from "mongoose";
+const { Webhooks } = require("@octokit/webhooks");
+
+const webhooks = new Webhooks({
+    secret: "mysecret",
+});
+
+const payloadParser = new PayloadParser(webhooks);
 
 export const router = express.Router();
 
 const apnsClient = new APNS({
-    team: process.env.APNS_ISS ?? '',
-    keyId: process.env.APNS_KID ?? '',
-    signingKey: process.env.APNS_AUTH_KEY ?? '',
-    host: process.env.APNS_SERVER ?? '',
-    defaultTopic: process.env.APNS_TOPIC ?? ''
+    team: process.env.APNS_ISS!,
+    keyId: process.env.APNS_KID!,
+    signingKey: process.env.APNS_AUTH_KEY!,
+    host: process.env.APNS_SERVER!,
+    defaultTopic: process.env.APNS_TOPIC!
 })
 
-router.post('/', async (req, res) => {
-    const eventCategory = req.header('X-GitHub-Event') as EventCategory | undefined;
-    const guid = req.header('X-GitHub-Delivery');
-    console.log(`webhook received: ${eventCategory} (${guid})`);
+webhooks.on('installation.created', async ({payload}: WebhookEvent<EventPayloads.WebhookPayloadInstallation>) => {
+    await Installation.create({
+        installationId: payload.installation.id,
+        githubId: payload.installation.account.id
+    })
+})
 
-    if (!eventCategory) {
-        console.log(`event category ${eventCategory} invalid`);
-        res.sendStatus(HTTPStatusCode.NO_CONTENT);
-        return;
-    }
-
-    if (eventCategory === EventCategory.installation) {
-        if (req.body['action'] === 'created') {
-            await Installation.create({
-                installationId: req.body['installation']['id'],
-                githubId: req.body['installation']['account']['id']
-            });
-        }
-
-        res.sendStatus(HTTPStatusCode.CREATED);
-        return;
-    }
-
+async function getUserFromInstallationId(id: number): Promise<(IUser & mongoose.Document)> {
     const githubId: number | undefined = await Installation
-        .findOne({ installationId: req.body['installation']['id'] })
+        .findOne({ installationId: id })
         .map(installation => installation?.githubId);
 
-    console.log(`github id is ${githubId}`);
-
     if (!githubId) {
-        console.error(`Installation with id ${req.body['installation']['id']} not found.`);
-        res.sendStatus(HTTPStatusCode.NOT_FOUND);
-        return;
+        return Promise.reject(`Installation with id ${id} not found.`);
     }
 
     const user = await User.findOne({ githubId: githubId })
     if (!user) {
-        console.error(`User with github id ${githubId} not found`);
-        res.sendStatus(HTTPStatusCode.NOT_FOUND);
+        return Promise.reject(`User with github id ${githubId} not found`);
+    }
+
+    return user;
+}
+
+router.post('/', async (req, res) => {
+    const name = req.header('X-GitHub-Event');
+    const id = req.header('X-GitHub-Delivery');
+
+    if (!name || !id) {
+        res.sendStatus(HTTPStatusCode.BAD_REQUEST);
         return;
     }
 
-    const event = parsePayload(req.body, eventCategory);
+    const event = await payloadParser.getReceivedEvent(id, name, req.body);
+
     if (!event) {
         console.error(`Payload is undefined`);
         res.sendStatus(HTTPStatusCode.INTERNAL_SERVER_ERROR);
+        return;
+    }
+
+    let user: IUser & mongoose.Document;
+    try {
+        user = await getUserFromInstallationId(req.body['installation']['id'])
+    } catch (e) {
+        console.error(e);
+        res.sendStatus(HTTPStatusCode.NOT_FOUND);
         return;
     }
 
@@ -81,8 +90,7 @@ router.post('/', async (req, res) => {
             console.log('Sending APNS notification');
             await apnsClient.send(sn);
         } catch (e) {
-            const message = `Error sending notification: ${JSON.stringify(e)}`;
-            console.log(message);
+            console.error(`Error sending notification: ${JSON.stringify(e)}`);
             res.sendStatus(HTTPStatusCode.INTERNAL_SERVER_ERROR);
             return;
         }

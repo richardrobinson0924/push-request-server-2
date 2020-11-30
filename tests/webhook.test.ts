@@ -1,4 +1,4 @@
-import { request } from "./helpers/route_test_support";
+import {request} from "./helpers/route_test_support";
 import {User} from "../models/user";
 import {EventType} from "../models/event";
 import {Installation} from "../models/installation";
@@ -22,7 +22,10 @@ test('webhook receive event valid', async (done) => {
             'X-GitHub-Event': 'pull_request',
             'X-GitHub-Delivery': '1'
         })
-        .send(FakeData.makePullRequestPayload('opened', false))
+        .send(FakeData.makePullRequestPayload('opened', false, 123))
+
+    const user = await User.findOne({githubId: 1});
+    expect(user!.latestEvent!.eventType).toEqual(EventType.prOpened);
 
     expect(response.status).toBe(HTTPStatusCode.OK);
 
@@ -46,7 +49,7 @@ test('invalid webhook event returns 204', async (done) => {
             'X-GitHub-Event': 'issues',
             'X-GitHub-Delivery': '1'
         })
-        .send(FakeData.makeIssuePayload('opened'))
+        .send(FakeData.makeIssuePayload('opened', 123))
 
     expect(response.status).toBe(HTTPStatusCode.NO_CONTENT);
 
