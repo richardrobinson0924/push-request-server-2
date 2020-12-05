@@ -9,7 +9,7 @@ type User struct {
 	mgm.DefaultModel `bson:",inline"`
 	GithubId         int64       `json:"github_id" bson:"github_id"`
 	DeviceTokens     []string    `json:"device_tokens" bson:"device_tokens"`
-	LatestEvent      Event       `json:"latest_event,omitempty" bson:"latest_event,omitempty"`
+	LatestEvent      *Event      `json:"latest_event,omitempty" bson:"latest_event,omitempty"`
 	AllowedTypes     []EventType `json:"allowed_types" bson:"allowed_types"`
 }
 
@@ -17,6 +17,7 @@ func CreateUser(githubId int64, deviceToken string, allowedTypes []EventType) er
 	user := &User{
 		GithubId:     githubId,
 		DeviceTokens: []string{deviceToken},
+		LatestEvent:  nil,
 		AllowedTypes: allowedTypes,
 	}
 

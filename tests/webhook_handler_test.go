@@ -82,7 +82,7 @@ func handleEventPayload(t *testing.T) {
 		2,
 	)
 
-	assert.Equal(t, want, user.LatestEvent)
+	assert.Equal(t, want, *user.LatestEvent)
 }
 
 func TestWebhookHandler(t *testing.T) {
