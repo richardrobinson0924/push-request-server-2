@@ -20,32 +20,28 @@ func contains(array []string, element string) bool {
 // Creates a new User with the specified github id, device token, and allowed types
 // If a User with the github id already exists, the user is updated with the new device token
 func handlePostUser(w http.ResponseWriter, r *http.Request) {
-	var data struct {
-		GithubId     int64              `json:"github_id"`
-		DeviceToken  string             `json:"device_token"`
-		AllowedTypes []models.EventType `json:"allowed_types"`
-	}
+	var user models.User
 
-	err := json.NewDecoder(r.Body).Decode(&data)
+	err := json.NewDecoder(r.Body).Decode(&user)
 	if err != nil {
 		fmt.Println("handle POST user: Failed to decode request body")
 		http.Error(w, "Failed to decode request body", http.StatusBadRequest)
 		return
 	}
 
-	user, err := models.GetUser(data.GithubId)
+	existingUser, err := models.GetUser(user.GithubId)
 	if err == nil {
-		if !contains(user.DeviceTokens, data.DeviceToken) {
-			fmt.Println("User with github id", data.GithubId, "already exists. Appending device token...")
-			user.DeviceTokens = append(user.DeviceTokens, data.DeviceToken)
-			_ = user.Save()
+		if !contains(existingUser.DeviceTokens, user.DeviceTokens[0]) {
+			fmt.Println("User with github id", user.GithubId, "already exists. Appending device token...")
+			existingUser.DeviceTokens = append(existingUser.DeviceTokens, user.DeviceTokens[0])
+			_ = existingUser.Save()
 		}
 
 		w.WriteHeader(http.StatusOK)
 		return
 	}
 
-	err = models.CreateUser(data.GithubId, data.DeviceToken, data.AllowedTypes)
+	err = models.CreateUser(user.GithubId, user.DeviceTokens[0], user.AllowedTypes)
 	if err != nil {
 		fmt.Println("handle POST user: Failed to create user", err.Error())
 		http.Error(w, err.Error(), http.StatusBadRequest)

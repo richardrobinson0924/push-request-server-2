@@ -111,7 +111,7 @@ func HandleWebhook(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user.LatestEvent = *parsedEvent
+	user.LatestEvent = parsedEvent
 	if err = user.Save(); err != nil {
 		fmt.Println("handle webhook error", err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)

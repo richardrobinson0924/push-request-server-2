@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/base64"
 	"fmt"
 	"github.com/Kamva/mgm"
 	"github.com/sideshow/apns2"
@@ -19,7 +20,17 @@ func init() {
 }
 
 func setupAPNS() {
-	authKey, _ := token.AuthKeyFromBytes([]byte(os.Getenv("APNS_AUTH_KEY")))
+	encodedKey := os.Getenv("APNS_AUTH_KEY")
+	decodedKey, err := base64.StdEncoding.DecodeString(encodedKey)
+	if err != nil {
+		panic(err)
+	}
+
+	authKey, err := token.AuthKeyFromBytes(decodedKey)
+	if err != nil {
+		panic(err)
+	}
+
 	apnsToken := &token.Token{
 		AuthKey: authKey,
 		KeyID:   os.Getenv("APNS_KID"),

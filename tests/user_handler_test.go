@@ -14,21 +14,15 @@ import (
 	"testing"
 )
 
-type UserPostData struct {
-	GithubId     int64              `json:"github_id,omitempty"`
-	DeviceToken  string             `json:"device_token,omitempty"`
-	AllowedTypes []models.EventType `json:"allowed_types,omitempty"`
-}
-
 type UserPatchData struct {
 	DeviceTokens []string           `json:"device_tokens,omitempty"`
 	AllowedTypes []models.EventType `json:"allowed_types,omitempty"`
 }
 
 func testPostUser201(t *testing.T) {
-	data := UserPostData{
+	data := models.User{
 		GithubId:     1234,
-		DeviceToken:  "a",
+		DeviceTokens: []string{"a"},
 		AllowedTypes: []models.EventType{models.IssueOpened},
 	}
 
@@ -82,9 +76,9 @@ func testPatchUser200(t *testing.T) {
 }
 
 func testPostUser400(t *testing.T) {
-	data := UserPostData{
+	data := models.User{
 		GithubId:     1234,
-		DeviceToken:  "a",
+		DeviceTokens: []string{"a"},
 		AllowedTypes: []models.EventType{models.IssueOpened},
 	}
 
@@ -163,20 +157,16 @@ func TestUserHandler(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	_ = mgm.Coll(&models.User{}).Drop(mgm.Ctx())
+	testMap := map[string]func(*testing.T){
+		"test-POST-user-creation":       testPostUser201,
+		"test-POST-user-already-exists": testPostUser400,
+		"test-GET-user":                 testGetUser200,
+		"test-GET-user-not-found":       testGetUser404,
+		"test-PATCH-user":               testPatchUser200,
+	}
 
-	t.Run("test-POST-user-creation", testPostUser201)
-	_ = mgm.Coll(&models.User{}).Drop(mgm.Ctx())
-
-	t.Run("test-POST-user-already-exists", testPostUser400)
-	_ = mgm.Coll(&models.User{}).Drop(mgm.Ctx())
-
-	t.Run("test-GET-user", testGetUser200)
-	_ = mgm.Coll(&models.User{}).Drop(mgm.Ctx())
-
-	t.Run("test-GET-user-not-found", testGetUser404)
-	_ = mgm.Coll(&models.User{}).Drop(mgm.Ctx())
-
-	t.Run("test-PATCH-user", testPatchUser200)
-	_ = mgm.Coll(&models.User{}).Drop(mgm.Ctx())
+	for testName, test := range testMap {
+		_ = mgm.Coll(&models.User{}).Drop(mgm.Ctx())
+		t.Run(testName, test)
+	}
 }
