@@ -3,7 +3,7 @@ package tests
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/kamva/mgm"
+	"github.com/Kamva/mgm"
 	"github.com/stretchr/testify/assert"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"net/http"
@@ -56,7 +56,7 @@ func testPatchUser200(t *testing.T) {
 	_ = models.CreateUser(1234, "a", []models.EventType{models.IssueOpened})
 
 	data := UserPatchData{
-		DeviceTokens: []string{"b"},
+		AllowedTypes: []models.EventType{models.PrMerged},
 	}
 
 	encoded, _ := json.Marshal(data)
@@ -77,8 +77,8 @@ func testPatchUser200(t *testing.T) {
 
 	user, _ := models.GetUser(1234)
 
-	assert.Contains(t, user.DeviceTokens, "b")
-	assert.Contains(t, user.AllowedTypes, models.IssueOpened)
+	assert.Contains(t, user.DeviceTokens, "a")
+	assert.Equal(t, user.AllowedTypes, []models.EventType{models.PrMerged})
 }
 
 func testPostUser400(t *testing.T) {
@@ -88,7 +88,7 @@ func testPostUser400(t *testing.T) {
 		AllowedTypes: []models.EventType{models.IssueOpened},
 	}
 
-	_ = models.CreateUser(1234, "a", []models.EventType{models.IssueOpened})
+	_ = models.CreateUser(1234, "b", []models.EventType{models.IssueOpened})
 
 	encoded, _ := json.Marshal(data)
 
@@ -102,7 +102,10 @@ func testPostUser400(t *testing.T) {
 
 	handler.ServeHTTP(rr, req)
 
-	assert.Equal(t, http.StatusBadRequest, rr.Code)
+	assert.Equal(t, http.StatusOK, rr.Code)
+
+	user, _ := models.GetUser(1234)
+	assert.Equal(t, user.DeviceTokens, []string{"b", "a"})
 }
 
 func testGetUser200(t *testing.T) {
@@ -163,10 +166,17 @@ func TestUserHandler(t *testing.T) {
 	_ = mgm.Coll(&models.User{}).Drop(mgm.Ctx())
 
 	t.Run("test-POST-user-creation", testPostUser201)
+	_ = mgm.Coll(&models.User{}).Drop(mgm.Ctx())
+
 	t.Run("test-POST-user-already-exists", testPostUser400)
+	_ = mgm.Coll(&models.User{}).Drop(mgm.Ctx())
 
 	t.Run("test-GET-user", testGetUser200)
+	_ = mgm.Coll(&models.User{}).Drop(mgm.Ctx())
+
 	t.Run("test-GET-user-not-found", testGetUser404)
+	_ = mgm.Coll(&models.User{}).Drop(mgm.Ctx())
 
 	t.Run("test-PATCH-user", testPatchUser200)
+	_ = mgm.Coll(&models.User{}).Drop(mgm.Ctx())
 }

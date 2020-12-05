@@ -12,9 +12,6 @@ jobs:
         with:
           go-version: '^1.15.5'
 
-      - name: Install dependencies
-        run: go get -v
-
       - name: MongoDB in GitHub Actions
         uses: supercharge/mongodb-github-action@1.3.0
         with:

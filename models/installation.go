@@ -1,7 +1,7 @@
 package models
 
 import (
-	"github.com/kamva/mgm"
+	"github.com/Kamva/mgm"
 	"go.mongodb.org/mongo-driver/bson"
 )
 

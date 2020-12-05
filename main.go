@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/kamva/mgm"
+	"github.com/Kamva/mgm"
 	"github.com/sideshow/apns2"
 	"github.com/sideshow/apns2/token"
 	"go.mongodb.org/mongo-driver/mongo/options"

@@ -3,7 +3,7 @@ package tests
 import (
 	"bytes"
 	"crypto/tls"
-	"github.com/kamva/mgm"
+	"github.com/Kamva/mgm"
 	"github.com/sideshow/apns2"
 	"github.com/stretchr/testify/assert"
 	"go.mongodb.org/mongo-driver/mongo/options"

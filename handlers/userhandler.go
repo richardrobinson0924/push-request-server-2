@@ -8,6 +8,17 @@ import (
 	"strconv"
 )
 
+func contains(array []string, element string) bool {
+	for _, a := range array {
+		if a == element {
+			return true
+		}
+	}
+	return false
+}
+
+// Creates a new User with the specified github id, device token, and allowed types
+// If a User with the github id already exists, the user is updated with the new device token
 func handlePostUser(w http.ResponseWriter, r *http.Request) {
 	var data struct {
 		GithubId     int64              `json:"github_id"`
@@ -22,10 +33,15 @@ func handlePostUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = models.GetUser(data.GithubId)
+	user, err := models.GetUser(data.GithubId)
 	if err == nil {
-		fmt.Println("handle POST user: User with id", data.GithubId, "already exists")
-		http.Error(w, "User already exists", http.StatusBadRequest)
+		if !contains(user.DeviceTokens, data.DeviceToken) {
+			fmt.Println("User with github id", data.GithubId, "already exists. Appending device token...")
+			user.DeviceTokens = append(user.DeviceTokens, data.DeviceToken)
+			_ = user.Save()
+		}
+
+		w.WriteHeader(http.StatusOK)
 		return
 	}
 
@@ -39,6 +55,7 @@ func handlePostUser(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 }
 
+// Gets a User using the github id specified in the `Authorization` header
 func handleGetUser(w http.ResponseWriter, r *http.Request) {
 	authString := r.Header.Get("Authorization")
 	githubId, err := strconv.Atoi(authString)
@@ -70,6 +87,7 @@ func handleGetUser(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// Updates a User with new data. Currently, the only fields supported are `allowed_types`
 func handlePatchUser(w http.ResponseWriter, r *http.Request) {
 	authString := r.Header.Get("Authorization")
 	githubId, err := strconv.Atoi(authString)
@@ -88,7 +106,6 @@ func handlePatchUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var data struct {
-		DeviceTokens []string           `json:"device_tokens,omitempty"`
 		AllowedTypes []models.EventType `json:"allowed_types,omitempty"`
 	}
 
@@ -97,10 +114,6 @@ func handlePatchUser(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("handle PATCH user", err.Error())
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
-	}
-
-	if data.DeviceTokens != nil {
-		user.DeviceTokens = data.DeviceTokens
 	}
 
 	if data.AllowedTypes != nil {
