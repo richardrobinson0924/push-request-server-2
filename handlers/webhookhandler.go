@@ -9,13 +9,21 @@ import (
 	"os"
 	"push-request/models"
 	"push-request/parsers"
-	"push-request/utils"
 )
 
 var apnsClient *apns2.Client
 
 func SetAPNSClient(client *apns2.Client) {
 	apnsClient = client
+}
+
+func containsEventType(array []models.EventType, element models.EventType) bool {
+	for _, a := range array {
+		if a == element {
+			return true
+		}
+	}
+	return false
 }
 
 func sendAPNSNotification(token string) error {
@@ -28,7 +36,11 @@ func sendAPNSNotification(token string) error {
 	}
 
 	_, err := apnsClient.Push(notification)
-	return err
+	if err != nil {
+		return fmt.Errorf("failed to send APNS notification (%w)", err)
+	}
+
+	return nil
 }
 
 func handleInstallationEvent(event *github.InstallationEvent) (bool, error) {
@@ -40,10 +52,25 @@ func handleInstallationEvent(event *github.InstallationEvent) (bool, error) {
 	installationId := event.GetInstallation().GetID()
 
 	if err := models.CreateInstallation(installationId, githubId); err != nil {
-		return false, err
+		return false, fmt.Errorf("failed to create installation (%w)", err)
 	}
 
 	return true, nil
+}
+
+func getUser(installationId int64) (*models.User, error) {
+	installation, err := models.GetInstallation(installationId)
+	if err != nil {
+		return nil, fmt.Errorf("error getting installation with id %d (%w)", installationId, err)
+	}
+
+	user, err := models.GetUser(installation.GithubId)
+	if err != nil {
+		return nil, fmt.Errorf("error getting user with github id %d (%w)", installation.GithubId, err)
+
+	}
+
+	return user, nil
 }
 
 func HandleWebhook(w http.ResponseWriter, r *http.Request) {
@@ -69,7 +96,7 @@ func HandleWebhook(w http.ResponseWriter, r *http.Request) {
 	case *github.InstallationEvent:
 		isCreated, err := handleInstallationEvent(event)
 		if err != nil {
-			fmt.Println("handle webhook error", err.Error())
+			fmt.Println(err.Error())
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -92,21 +119,14 @@ func HandleWebhook(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	installation, err := models.GetInstallation(parsedEvent.InstallationId)
+	user, err := getUser(parsedEvent.InstallationId)
 	if err != nil {
-		fmt.Println("handle webhook error", err.Error())
+		fmt.Println(err.Error())
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
 
-	user, err := models.GetUser(installation.GithubId)
-	if err != nil {
-		fmt.Println("handle webhook error", err.Error())
-		http.Error(w, err.Error(), http.StatusNotFound)
-		return
-	}
-
-	if !utils.Contains(user.AllowedTypes, parsedEvent.EventType) {
+	if !containsEventType(user.AllowedTypes, parsedEvent.EventType) {
 		w.WriteHeader(http.StatusOK)
 		return
 	}
@@ -120,7 +140,7 @@ func HandleWebhook(w http.ResponseWriter, r *http.Request) {
 
 	for _, token := range user.DeviceTokens {
 		if err = sendAPNSNotification(token); err != nil {
-			fmt.Println("handle webhook error", err.Error())
+			fmt.Println(err.Error())
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}

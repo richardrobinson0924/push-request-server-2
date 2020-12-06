@@ -8,7 +8,7 @@ import (
 	"strconv"
 )
 
-func contains(array []string, element string) bool {
+func containsString(array []string, element string) bool {
 	for _, a := range array {
 		if a == element {
 			return true
@@ -31,7 +31,7 @@ func handlePostUser(w http.ResponseWriter, r *http.Request) {
 
 	existingUser, err := models.GetUser(user.GithubId)
 	if err == nil {
-		if !contains(existingUser.DeviceTokens, user.DeviceTokens[0]) {
+		if !containsString(existingUser.DeviceTokens, user.DeviceTokens[0]) {
 			fmt.Println("User with github id", user.GithubId, "already exists. Appending device token...")
 			existingUser.DeviceTokens = append(existingUser.DeviceTokens, user.DeviceTokens[0])
 			_ = existingUser.Save()
