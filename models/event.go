@@ -8,11 +8,13 @@ const (
 	IssueOpened       EventType = "issueOpened"
 	IssueClosed       EventType = "issueClosed"
 	IssueAssigned     EventType = "issueAssigned"
+	IssueCommented    EventType = "issueCommented"
 	PrOpened          EventType = "prOpened"
 	PrClosed          EventType = "prClosed"
 	PrMerged          EventType = "prMerged"
 	PrReviewRequested EventType = "prReviewRequested"
 	PrReviewed        EventType = "prReviewed"
+	PrReviewCommented EventType = "prReviewCommented"
 )
 
 type Event struct {
