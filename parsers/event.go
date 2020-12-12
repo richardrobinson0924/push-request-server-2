@@ -53,6 +53,7 @@ func parsePullRequest(e *github.PullRequestEvent) *models.Event {
 	return models.NewEvent(
 		eventType,
 		e.GetRepo().GetFullName(),
+		e.GetRepo().GetID(),
 		pr.GetNumber(),
 		pr.GetTitle(),
 		description,
@@ -92,6 +93,7 @@ func parsePRReview(e *github.PullRequestReviewEvent) *models.Event {
 	return models.NewEvent(
 		models.PrReviewed,
 		e.GetRepo().GetFullName(),
+		e.GetRepo().GetID(),
 		pr.GetNumber(),
 		pr.GetTitle(),
 		description,
@@ -125,6 +127,7 @@ func parseIssuesEvent(e *github.IssuesEvent) *models.Event {
 	return models.NewEvent(
 		eventType,
 		e.GetRepo().GetFullName(),
+		e.GetRepo().GetID(),
 		issue.GetNumber(),
 		issue.GetTitle(),
 		description,

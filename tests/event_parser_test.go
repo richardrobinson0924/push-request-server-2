@@ -18,6 +18,7 @@ func TestIssueParsing(t *testing.T) {
 	want := *models.NewEvent(
 		models.IssueAssigned,
 		"Codertocat/Hello-World",
+		186853002,
 		1,
 		"Spelling error in the README file",
 		"Assigned #1 to @Codertocat",
@@ -41,6 +42,7 @@ func TestPullRequestParsing(t *testing.T) {
 	want := *models.NewEvent(
 		models.PrOpened,
 		"Codertocat/Hello-World",
+		186853002,
 		2,
 		"Update the README with new information.",
 		"Opened #2",
@@ -64,6 +66,7 @@ func TestPRReviewParsing(t *testing.T) {
 	want := *models.NewEvent(
 		models.PrReviewed,
 		"Codertocat/Hello-World",
+		186853002,
 		2,
 		"Update the README with new information.",
 		"Approved #2",

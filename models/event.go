@@ -18,6 +18,7 @@ const (
 type Event struct {
 	EventType      EventType `json:"event_type"`
 	RepoName       string    `json:"repo_name"`
+	RepoId         int64     `json:"repo_id"`
 	Number         int       `json:"number"`
 	Title          string    `json:"title"`
 	Description    string    `json:"description"`
@@ -28,12 +29,13 @@ type Event struct {
 }
 
 func NewEvent(
-	eventType EventType, repoName string, number int, title string, description string,
+	eventType EventType, repoName string, repoId int64, number int, title string, description string,
 	avatarUrl string, timestamp time.Time, url string, installationId int64,
 ) *Event {
 	return &Event{
 		EventType:      eventType,
 		RepoName:       repoName,
+		RepoId:         repoId,
 		Number:         number,
 		Title:          title,
 		Description:    description,

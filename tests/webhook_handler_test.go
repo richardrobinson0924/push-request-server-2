@@ -73,6 +73,7 @@ func handleEventPayload(t *testing.T) {
 	want := *models.NewEvent(
 		models.IssueAssigned,
 		"Codertocat/Hello-World",
+		186853002,
 		1,
 		"Spelling error in the README file",
 		"Assigned #1 to @Codertocat",
