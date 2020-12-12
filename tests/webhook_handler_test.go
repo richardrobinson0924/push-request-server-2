@@ -86,7 +86,7 @@ func handleEventPayload(t *testing.T) {
 }
 
 func TestWebhookHandler(t *testing.T) {
-	_ = os.Setenv("DB_NAME", "push_request_3")
+	_ = os.Setenv("DB_NAME", "push_request_api_test")
 	_ = os.Setenv("DB_URI", "mongodb://localhost:27017")
 
 	err := mgm.SetDefaultConfig(nil, os.Getenv("DB_NAME"), options.Client().ApplyURI(os.Getenv("DB_URI")))

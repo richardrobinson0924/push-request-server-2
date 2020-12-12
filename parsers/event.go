@@ -13,11 +13,17 @@ func ParseRawEventPayload(payload interface{}) *models.Event {
 	case *github.IssuesEvent:
 		parsedEvent = parseIssuesEvent(e)
 
+	case *github.IssueCommentEvent:
+		parsedEvent = parseIssueCommentEvent(e)
+
 	case *github.PullRequestReviewEvent:
 		parsedEvent = parsePRReview(e)
 
 	case *github.PullRequestEvent:
 		parsedEvent = parsePullRequest(e)
+
+	case *github.PullRequestReviewCommentEvent:
+		parsedEvent = parsePRReviewComment(e)
 
 	default:
 		return nil
@@ -98,6 +104,42 @@ func parsePRReview(e *github.PullRequestReviewEvent) *models.Event {
 		e.GetSender().GetAvatarURL(),
 		pr.GetUpdatedAt(),
 		pr.GetHTMLURL(),
+		e.GetInstallation().GetID(),
+	)
+}
+
+func parsePRReviewComment(e *github.PullRequestReviewCommentEvent) *models.Event {
+	if e.GetAction() != "created" {
+		return nil
+	}
+
+	return models.NewEvent(
+		models.PrReviewCommented,
+		e.GetRepo().GetFullName(),
+		e.GetPullRequest().GetNumber(),
+		e.GetPullRequest().GetTitle(),
+		fmt.Sprintf("Commented \"%s\"", e.GetComment().GetBody()),
+		e.GetSender().GetAvatarURL(),
+		e.GetComment().GetUpdatedAt(),
+		e.GetComment().GetHTMLURL(),
+		e.GetInstallation().GetID(),
+	)
+}
+
+func parseIssueCommentEvent(e *github.IssueCommentEvent) *models.Event {
+	if e.GetAction() != "created" {
+		return nil
+	}
+
+	return models.NewEvent(
+		models.IssueCommented,
+		e.GetRepo().GetFullName(),
+		e.GetIssue().GetNumber(),
+		e.GetIssue().GetTitle(),
+		fmt.Sprintf("Commented \"%s\"", e.GetComment().GetBody()),
+		e.GetSender().GetAvatarURL(),
+		e.GetComment().GetUpdatedAt(),
+		e.GetComment().GetHTMLURL(),
 		e.GetInstallation().GetID(),
 	)
 }
