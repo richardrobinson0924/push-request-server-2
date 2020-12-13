@@ -51,6 +51,7 @@ func setupAPNS() {
 func main() {
 	setupAPNS()
 
+	http.HandleFunc("/authorized_repos", handlers.HandleAuthorizedRepos)
 	http.HandleFunc("/users", handlers.HandleUser)
 	http.HandleFunc("/webhook", handlers.HandleWebhook)
 

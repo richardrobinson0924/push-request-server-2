@@ -45,7 +45,7 @@ func handleInstallationEvent(t *testing.T) {
 }
 
 func handleEventPayload(t *testing.T) {
-	_ = models.CreateInstallation(2, 1)
+	_ = models.CreateInstallation(2, 1, []models.Repository{})
 	_ = models.CreateUser(1, "a", []models.EventType{models.IssueAssigned})
 
 	handlers.SetAPNSClient(mockClient())

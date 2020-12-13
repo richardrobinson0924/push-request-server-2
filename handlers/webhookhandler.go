@@ -51,7 +51,16 @@ func handleInstallationEvent(event *github.InstallationEvent) (bool, error) {
 	githubId := event.GetInstallation().GetAccount().GetID()
 	installationId := event.GetInstallation().GetID()
 
-	if err := models.CreateInstallation(installationId, githubId); err != nil {
+	var repos []models.Repository
+	for _, githubRepo := range event.Repositories {
+		var repo = models.NewRepository(
+			githubRepo.GetID(),
+			githubRepo.GetFullName(),
+		)
+		repos = append(repos, repo)
+	}
+
+	if err := models.CreateInstallation(installationId, githubId, repos); err != nil {
 		return false, fmt.Errorf("failed to create installation (%w)", err)
 	}
 
